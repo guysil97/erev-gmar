@@ -6,7 +6,7 @@ Usage: python3 stage5_check.py [--manifest ...] [--order ...] [--report ...]
 """
 import argparse, random
 from collections import Counter
-from common import BUILD, MANIFEST
+from common import OUT as BUILD, MANIFEST
 from order_rules import Problem, load_manifest, read_order, write_order
 
 ap = argparse.ArgumentParser()

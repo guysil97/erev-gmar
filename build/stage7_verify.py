@@ -10,7 +10,7 @@ from pathlib import Path
 from pptx import Presentation
 from pptx.enum.shapes import MSO_SHAPE_TYPE
 from pptx.oxml.ns import qn
-from common import BUILD, INVENTORY, MANIFEST
+from common import OUT as BUILD, INVENTORY, MANIFEST
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--order", default=str(BUILD / "order.csv"))

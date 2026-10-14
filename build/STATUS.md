@@ -42,3 +42,12 @@
   (the connector can't upload binary files at this volume).
 - Note for later: these frames are 1080p at most, and the pHash dedup in stage 1 will keep an original over them if someone sends one.
   Their route is unknown (the folder isn't under מלא/תסריטאות).
+
+## Trial run: one-minute slideshow (completed 2026-10-14)
+- The source snapshot came from Drive via gdown (folder shared by link). "תמונות מתוך גלית רוזן" = the frames extracted from the video
+  (the user uploaded them back to Drive).
+- Stages 1–2 ran on the full snapshot (519 files → 509 images, 10 duplicates). Then `test_sample.py` picked 4 images per sender (seed 2026),
+  and stages 3–7 ran on the 20 sampled images. Outputs in `build/test/` (not in git).
+- All test outputs use `SLIDESHOW_OUT=build/test`; the final run uses the default (`build/`).
+- The final run (stages 1–7 on everything) has **not** happened yet. Stop after stage 2 and before stage 6 as required.
+- Note: a full Drive download is still needed (`gdown ... --continue` into `source/`).

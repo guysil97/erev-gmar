@@ -7,3 +7,4 @@ build/contact_sheets/
 build/*.pptx
 __pycache__/
 build/galit/out/
+build/test/

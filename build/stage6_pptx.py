@@ -12,7 +12,7 @@ from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.oxml.ns import qn
 from pptx.util import Emu
-from common import BUILD
+from common import OUT as BUILD
 
 ADV_MS = 3000
 ap = argparse.ArgumentParser()

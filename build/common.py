@@ -8,10 +8,12 @@ ROOT = BUILD.parent
 # Source folder with the originals (read-only). Override with SLIDESHOW_SRC.
 SRC = Path(os.environ.get("SLIDESHOW_SRC", ROOT / "source"))
 
-EXTRACTED = BUILD / "extracted"      # unzipped archives (copies, never originals)
-IMAGES = BUILD / "images"            # processed JPEGs
-INVENTORY = BUILD / "inventory.csv"  # every file found, with status
-MANIFEST = BUILD / "manifest.csv"
+# Output folder (override with SLIDESHOW_OUT, e.g. build/test for a trial run).
+OUT = Path(os.environ.get("SLIDESHOW_OUT", BUILD))
+EXTRACTED = OUT / "extracted"      # unzipped archives (copies, never originals)
+IMAGES = OUT / "images"            # processed JPEGs
+INVENTORY = OUT / "inventory.csv"  # every file found, with status
+MANIFEST = OUT / "manifest.csv"
 
 UNKNOWN = "לא ידוע"
 ROUTES = {"מלא", "תסריטאות"}

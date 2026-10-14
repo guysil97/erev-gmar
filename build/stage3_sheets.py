@@ -6,7 +6,7 @@ Usage: python3 stage3_sheets.py [manifest.csv] [out_dir]
 import csv, sys
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
-from common import BUILD, MANIFEST
+from common import OUT as BUILD, MANIFEST
 
 manifest = Path(sys.argv[1]) if len(sys.argv) > 1 else MANIFEST
 out = Path(sys.argv[2]) if len(sys.argv) > 2 else BUILD / "contact_sheets"

@@ -5,7 +5,7 @@ Same seed -> same order. Change the seed for a new shuffle.
 """
 import argparse, random, time
 from pathlib import Path
-from common import BUILD, MANIFEST
+from common import OUT as BUILD, MANIFEST
 from order_rules import Problem, load_manifest, write_order
 
 ap = argparse.ArgumentParser()

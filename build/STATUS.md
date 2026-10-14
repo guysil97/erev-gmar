@@ -50,4 +50,5 @@
   and stages 3–7 ran on the 20 sampled images. Outputs in `build/test/` (not in git).
 - All test outputs use `SLIDESHOW_OUT=build/test`; the final run uses the default (`build/`).
 - The final run (stages 1–7 on everything) has **not** happened yet. Stop after stage 2 and before stage 6 as required.
-- Note: a full Drive download is still needed (`gdown ... --continue` into `source/`).
+- Full Drive download finished 2026-10-14 into `source/` (gdown --continue; rerun the same command to pick up new files).
+  At that point: אפרת 50, גבי 10, גיא זילברשץ 219, גיא חזם 83, תמונות מתוך גלית רוזן 214 (+ the .mov). תסריטאות still empty.

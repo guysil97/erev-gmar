@@ -32,3 +32,13 @@
 - **Do not build anything** until the user says the collection is complete and asks for the slideshow.
 - Whether to include videos in the slideshow (the original spec skipped them): to be decided once the collection is complete.
 - Format: pptx (python-pptx). Best shown in PowerPoint; Google Slides doesn't support per-slide auto-advance.
+
+## Side task: photos from the "Galit Rosen" slideshow (completed 2026-10-14)
+- Source: `מלא /מצגת גלית רוזן_ אחרי תיקונים2.mov` (15:18, 1080p), downloaded to `source_video/` (not in git).
+- Scripts in `build/galit/`: `frame_signal.py` → `segment.py` → `extract.py` → `sheets.py` (review) → `finalize.py`.
+- Result: 203 photos + 11 video frames (one per clip), black bars cropped, JPEG q95. Index: `build/galit/galit_index.json`.
+- Excluded: black opening frame and the title card. The opening video (segments 3–10) counts as one clip.
+- Drive folder "תמונות גלית רוזן" created (id 1Vr2VymQuZnrjM-3P9O7c8za0k9BgKWAb); the user uploads the zip contents manually
+  (the connector can't upload binary files at this volume).
+- Note for later: these frames are 1080p at most, and the pHash dedup in stage 1 will keep an original over them if someone sends one.
+  Their route is unknown (the folder isn't under מלא/תסריטאות).

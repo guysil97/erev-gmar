@@ -1,7 +1,9 @@
 # Original photos and generated images stay out of git (size + privacy)
 source/
+source_video/
 build/extracted/
 build/images/
 build/contact_sheets/
 build/*.pptx
 __pycache__/
+build/galit/out/

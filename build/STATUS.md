@@ -25,3 +25,10 @@
   inside a folder named after the zip.
 - Route = the "מלא"/"תסריטאות" folder anywhere in the path; sender = the folder directly under it.
 - manifest.csv also has a "מקור" column (source path) for traceability.
+
+## Open decisions (as of 2026-10-14)
+- The files come through the Google Drive connector (folder "מצגת ערב גמר", id 10BjCycOu7W6_U95wVJT28ZSqQTm5F571).
+  On 2026-10-14 the folder had no photos: "תסריטאות" was empty and "מלא " held only a single .mov.
+- **Do not build anything** until the user says the collection is complete and asks for the slideshow.
+- Whether to include videos in the slideshow (the original spec skipped them): to be decided once the collection is complete.
+- Format: pptx (python-pptx). Best shown in PowerPoint; Google Slides doesn't support per-slide auto-advance.

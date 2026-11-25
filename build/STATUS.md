@@ -59,3 +59,10 @@
 - **Videos are muted.** Background music is coming (a "מוזיקה" folder in Drive, files numbered 01_, 02_…).
 - Proposed: an MP4 of the whole show with the music mixed in, in addition to the pptx (waiting on the user's answer).
 - The user is still adding material: rerun the listing (gdown --json) + fetch.py before the final run.
+
+## Instructions collected (2026-11-25) – do NOT start until the user says to build ("תכין")
+1. Videos go in as video, muted; videos take priority over photos (never filtered out; in a video/photo duplicate the video wins).
+2. Selection: use judgment and include the relatively good photos (not everything).
+3. Remove duplicates **and very similar photos** (burst shots / the same moment): keep only the best one.
+4. Background music from a "מוזיקה" folder in Drive (if uploaded). Open question: also an MP4 of the whole show?
+5. The user is still adding material and instructions.

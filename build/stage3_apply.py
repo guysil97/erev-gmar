@@ -17,7 +17,7 @@ for tok in re.findall(r"\d+(?:-\d+)?", prod_file.read_text()):
 rows = list(csv.DictReader(open(manifest, encoding="utf-8-sig")))
 fields = list(rows[0].keys())
 if "קטגוריה" not in fields:
-    fields.insert(3, "קטגוריה")
+    fields.insert(fields.index("מסלול") + 1, "קטגוריה")
 for n, r in enumerate(rows, 1):
     r["קטגוריה"] = "הפקה" if n in prod else "הווי"
 with open(manifest, "w", newline="", encoding="utf-8-sig") as f:

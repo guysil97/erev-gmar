@@ -12,7 +12,11 @@ import imagehash
 import pillow_heif
 from PIL import Image, ImageOps
 
-from common import EXTRACTED, INVENTORY, JUNK_NAMES, SRC, UNKNOWN, VIDEO_EXT, classify_route, nfc
+import re
+import subprocess
+
+from common import (EXCLUDE_SOURCES, EXTRACTED, GALIT_CLIPS, GALIT_FOLDER, INVENTORY, JUNK_NAMES, SRC, UNKNOWN,
+                    VIDEO_EXT, classify_route, nfc)
 
 pillow_heif.register_heif_opener()
 Image.MAX_IMAGE_PIXELS = None
@@ -43,6 +47,28 @@ def safe_extract(zpath: Path, dest: Path) -> list[str]:
             except Exception as e:  # corrupt member
                 errors.append(f"{name}: {e}")
     return errors
+
+
+def probe_video(path):
+    """(width, height, duration) of a video, rotation applied."""
+    out = subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0", "-show_entries",
+                          "stream=width,height:stream_side_data=rotation:format=duration", "-of", "json", str(path)],
+                         capture_output=True, text=True, check=True).stdout
+    import json
+    j = json.loads(out)
+    st = j["streams"][0]
+    w, h = st["width"], st["height"]
+    rot = next((abs(int(sd.get("rotation", 0))) for sd in st.get("side_data_list", [])), 0)
+    if rot in (90, 270):
+        w, h = h, w
+    return w, h, float(j["format"]["duration"])
+
+
+def video_frame(path, t):
+    out = subprocess.run(["ffmpeg", "-v", "error", "-ss", f"{t:.2f}", "-i", str(path), "-frames:v", "1",
+                          "-f", "image2pipe", "-vcodec", "png", "-"], capture_output=True, check=True).stdout
+    import io
+    return Image.open(io.BytesIO(out))
 
 
 def logical_parts(rel: tuple[str, ...]) -> tuple[str, str]:
@@ -100,17 +126,32 @@ def main():
     for path, rel in found:
         route, sender = logical_parts(rel)
         row = {"path": str(path), "logical": "/".join(rel), "sender": sender, "route": route,
-               "status": "", "reason": "", "width": "", "height": "", "bytes": path.stat().st_size,
-               "phash": "", "dhash": "", "dup_of": ""}
+               "status": "", "reason": "", "media": "image", "duration": "", "width": "", "height": "",
+               "bytes": path.stat().st_size, "phash": "", "dhash": "", "dup_of": ""}
         name = path.name.lower()
         ext = path.suffix.lower()
-        if ext == ".zip":
+        logical = nfc(row["logical"])
+        clip = GALIT_CLIPS / (path.stem + ".mp4")
+        if GALIT_FOLDER in logical and re.fullmatch(r"video_frame_\d+", path.stem) and clip.exists():
+            # A frame that stands for a clip of the Galit Rosen slideshow: use the clip itself.
+            row["path"], ext = str(clip), ".mp4"
+            path = clip
+        if logical in EXCLUDE_SOURCES:
+            row.update(status="skipped", reason=EXCLUDE_SOURCES[logical])
+        elif ext == ".zip":
             errs = zip_errors.get(str(path), [])
             row.update(status="skipped", reason="zip (חולץ)" + (f"; שגיאות: {len(errs)}" if errs else ""))
         elif name in JUNK_NAMES or path.name.startswith("._") or "__MACOSX" in rel:
             row.update(status="skipped", reason="קובץ מערכת")
         elif ext in VIDEO_EXT:
-            row.update(status="skipped", reason="וידאו")
+            try:
+                w, h, dur = probe_video(path)
+                small = video_frame(path, min(1.0, dur / 2)).convert("RGB")
+                small.thumbnail((512, 512))
+                row.update(status="kept", media="video", width=w, height=h, duration=round(dur, 2),
+                           phash=str(imagehash.phash(small)), dhash=str(imagehash.dhash(small)))
+            except Exception as e:
+                row.update(status="skipped", reason=f"וידאו לא קריא ({type(e).__name__})")
         else:
             try:
                 with Image.open(path) as im:
@@ -138,6 +179,8 @@ def main():
 
     for i in range(len(imgs)):
         for j in range(i + 1, len(imgs)):
+            if imgs[i]["media"] != imgs[j]["media"]:
+                continue
             if hashes[i][0] - hashes[j][0] <= PHASH_MAX and hashes[i][1] - hashes[j][1] <= DHASH_MAX:
                 parent[find(i)] = find(j)
 
@@ -148,7 +191,7 @@ def main():
         if len(members) < 2:
             continue
         # Highest quality = most pixels, then largest file; prefer a known sender on ties.
-        best = max(members, key=lambda k: (imgs[k]["width"] * imgs[k]["height"], imgs[k]["bytes"],
+        best = max(members, key=lambda k: (float(imgs[k]["duration"] or 0), imgs[k]["width"] * imgs[k]["height"], imgs[k]["bytes"],
                                            imgs[k]["sender"] != UNKNOWN))
         for k in members:
             if k != best:

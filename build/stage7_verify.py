@@ -2,11 +2,13 @@
 
 Checks: slide count == order.csv rows, each slide has exactly one picture (in order), no text,
 16:9, each slide has <p:transition advTm="3000"> placed right after clrMapOvr.
+Video slides instead: exactly one media shape holding that video, advTm = video length, autoplay timing.
 Usage: python3 stage7_verify.py [--order ...] [--pptx ...] [--manifest ...] [--inventory ...] [--check ...] [--report ...]
 """
-import argparse, csv, hashlib
+import argparse, csv, hashlib, math
 from collections import Counter
 from pathlib import Path
+from lxml import etree
 from pptx import Presentation
 from pptx.enum.shapes import MSO_SHAPE_TYPE
 from pptx.oxml.ns import qn
@@ -32,6 +34,22 @@ slides = list(prs.slides)
 if len(slides) != len(order):
     errors.append(f"מספר שקופיות {len(slides)} != {len(order)} שורות ב-order.csv")
 for n, (s, r) in enumerate(zip(slides, order), 1):
+    if r.get("סוג") == "וידאו":
+        media = [sh for sh in s.shapes if sh.shape_type == MSO_SHAPE_TYPE.MEDIA]
+        want = str(int(math.ceil(float(r["משך"]) * 10)) * 100)
+        tr = s._element.find(qn("p:transition"))
+        rels = [rel for rel in s.part.rels.values() if "video" in rel.reltype or "media" in rel.reltype]
+        blobs = {rel.target_part.blob for rel in rels if not rel.is_external}
+        if len(media) != 1:
+            errors.append(f"שקופית {n}: {len(media)} סרטונים")
+        elif (base / r["קובץ"]).read_bytes() not in blobs:
+            errors.append(f"שקופית {n}: הסרטון לא תואם ל-{r['קובץ']}")
+        if tr is None or tr.get("advTm") != want:
+            errors.append(f"שקופית {n}: מעבר לא תואם לאורך הסרטון ({want}ms)")
+        tm = s._element.find(qn("p:timing"))
+        if tm is None or 'evt="onBegin"' not in etree.tostring(tm).decode() or "playFrom" not in etree.tostring(tm).decode():
+            errors.append(f"שקופית {n}: הסרטון לא מוגדר לניגון אוטומטי")
+        continue
     pics = [sh for sh in s.shapes if sh.shape_type == MSO_SHAPE_TYPE.PICTURE]
     if len(pics) != 1:
         errors.append(f"שקופית {n}: {len(pics)} תמונות")
@@ -50,11 +68,13 @@ for e in errors[:20]:
 
 # ---------- report ----------
 seed = order[0]["seed"] if order else ""
-L = [f"# {args.title}", "", f"- קובץ: `{Path(args.pptx).name}`", f"- שקופיות: {len(slides)}  "
-     f"(משך: {len(slides) * 3 // 60}:{len(slides) * 3 % 60:02d} דקות, 3 שניות לשקופית)", f"- seed: {seed}",
+total = sum(math.ceil(float(r["משך"]) * 10) / 10 if r.get("סוג") == "וידאו" else 3 for r in order)
+nvid = sum(r.get("סוג") == "וידאו" for r in order)
+L = [f"# {args.title}", "", f"- קובץ: `{Path(args.pptx).name}`", f"- שקופיות: {len(slides)} ({len(slides) - nvid} תמונות, {nvid} סרטונים)",
+     f"- משך: {int(total) // 60}:{int(total) % 60:02d} דקות (תמונה: 3 שניות; סרטון: באורך הסרטון, בלי סאונד)", f"- seed: {seed}",
      f"- בדיקה סופית: {'עברה ✅' if not errors else 'נכשלה ❌'}"]
 L += [f"  - {e}" for e in errors]
-for title, col in (("לפי מסלול", "מסלול"), ("לפי שולח", "שולח"), ("לפי קטגוריה", "קטגוריה")):
+for title, col in (("לפי מסלול", "מסלול"), ("לפי שולח", "שולח"), ("לפי קטגוריה", "קטגוריה"), ("לפי סוג", "סוג")):
     c = Counter(r[col] or "—" for r in order)
     L += ["", f"## {title}", "", "| | שקופיות |", "|---|---|", *[f"| {k} | {v} |" for k, v in c.most_common()]]
 L += ["", "## קבצים שהוחרגו"]

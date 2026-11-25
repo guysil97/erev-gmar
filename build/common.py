@@ -15,7 +15,16 @@ IMAGES = OUT / "images"            # processed JPEGs
 INVENTORY = OUT / "inventory.csv"  # every file found, with status
 MANIFEST = OUT / "manifest.csv"
 
+GALIT_CLIPS = OUT / "galit_clips"   # muted MP4 clips cut from the Galit Rosen slideshow (galit/clips.py)
+
 UNKNOWN = "לא ידוע"
+
+# Source files left out on purpose (logical path -> reason).
+EXCLUDE_SOURCES = {
+    "מלא/מצגת גלית רוזן_ אחרי תיקונים2.mov":
+        "המצגת הקודמת (גלית רוזן) – התמונות והקטעים ממנה נכנסו בנפרד דרך 'תמונות מתוך גלית רוזן'",
+}
+GALIT_FOLDER = "תמונות מתוך גלית רוזן"
 ROUTES = {"מלא", "תסריטאות"}
 
 VIDEO_EXT = {".mp4", ".mov", ".avi", ".mkv", ".m4v", ".3gp", ".wmv", ".webm", ".mts", ".m2ts", ".mpg", ".mpeg"}

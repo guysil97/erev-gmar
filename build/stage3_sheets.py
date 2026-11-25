@@ -19,12 +19,12 @@ font = ImageFont.load_default(size=36)
 for k in range(0, len(rows), COLS * ROWS):
     sheet = Image.new("RGB", (COLS * TW, ROWS * TH), (60, 60, 60))
     for i, r in enumerate(rows[k:k + COLS * ROWS]):
-        im = Image.open(manifest.parent / r["קובץ"]).convert("RGB")
+        im = Image.open(manifest.parent / (r.get("פוסטר") or r["קובץ"])).convert("RGB")
         im.thumbnail((TW - 8, TH - 8))
         x = (i % COLS) * TW + (TW - im.width) // 2
         y = (i // COLS) * TH + (TH - im.height) // 2
         sheet.paste(im, (x, y))
-        ImageDraw.Draw(sheet).text(((i % COLS) * TW + 8, (i // COLS) * TH + 6), str(k + i + 1),
+        ImageDraw.Draw(sheet).text(((i % COLS) * TW + 8, (i // COLS) * TH + 6), str(k + i + 1) + ("  VIDEO" if r.get("סוג") == "וידאו" else ""),
                                    fill="yellow", font=font, stroke_width=4, stroke_fill="black")
     sheet.save(out / f"sheet_{k // 16 + 1:03d}.jpg", quality=80)
 print("sheets:", (len(rows) + 15) // 16, "->", out)

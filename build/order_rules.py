@@ -165,10 +165,11 @@ class Problem:
 def write_order(path, prob, order, seed):
     with open(path, "w", newline="", encoding="utf-8-sig") as f:
         w = csv.writer(f)
-        w.writerow(["מיקום", "קובץ", "שולח", "מסלול", "קטגוריה", "seed"])
+        w.writerow(["מיקום", "קובץ", "שולח", "מסלול", "קטגוריה", "סוג", "משך", "פוסטר", "seed"])
         for p, i in enumerate(order, 1):
             r = prob.rows[i]
-            w.writerow([p, r["קובץ"], r["שולח"], r["מסלול"], r.get("קטגוריה", ""), seed])
+            w.writerow([p, r["קובץ"], r["שולח"], r["מסלול"], r.get("קטגוריה", ""), r.get("סוג", "תמונה"),
+                        r.get("משך", ""), r.get("פוסטר", ""), seed])
 
 
 def read_order(path, prob):

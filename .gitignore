@@ -8,3 +8,5 @@ build/*.pptx
 __pycache__/
 build/galit/out/
 build/test/
+build/test2/
+build/galit_clips/

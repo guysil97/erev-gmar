@@ -52,3 +52,10 @@
 - The final run (stages 1–7 on everything) has **not** happened yet. Stop after stage 2 and before stage 6 as required.
 - Full Drive download finished 2026-10-14 into `source/` (gdown --continue; rerun the same command to pick up new files).
   At that point: אפרת 50, גבי 10, גיא זילברשץ 219, גיא חזם 83, תמונות מתוך גלית רוזן 214 (+ the .mov). תסריטאות still empty.
+
+## Decisions 2026-11-25
+- The user asked for the final slideshow (skipping the two checkpoints). Anything that is a video goes into the slideshow **as video**,
+  including the 11 clips from the Galit Rosen slideshow (in place of video_frame_XX.jpg).
+- **Videos are muted.** Background music is coming (a "מוזיקה" folder in Drive, files numbered 01_, 02_…).
+- Proposed: an MP4 of the whole show with the music mixed in, in addition to the pptx (waiting on the user's answer).
+- The user is still adding material: rerun the listing (gdown --json) + fetch.py before the final run.

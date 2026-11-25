@@ -10,3 +10,9 @@ build/galit/out/
 build/test/
 build/test2/
 build/galit_clips/
+build/mp4_segments/
+build/*.mp4
+build/music.m4a
+build/_audio_icon.png
+build/contact_sheets/
+build/images/

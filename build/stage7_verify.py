@@ -13,6 +13,7 @@ from pptx import Presentation
 from pptx.enum.shapes import MSO_SHAPE_TYPE
 from pptx.oxml.ns import qn
 from common import OUT as BUILD, INVENTORY, MANIFEST
+from show_plan import load
 
 ap = argparse.ArgumentParser()
 ap.add_argument("--order", default=str(BUILD / "order.csv"))
@@ -24,7 +25,7 @@ ap.add_argument("--report", default=str(BUILD / "report.md"))
 ap.add_argument("--title", default="דוח מצגת ערב הגמר")
 args = ap.parse_args()
 
-order = list(csv.DictReader(open(args.order, encoding="utf-8-sig")))
+order, PHOTO_MS = load(Path(args.order))
 base = Path(args.order).parent
 prs = Presentation(args.pptx)
 errors = []
@@ -36,10 +37,11 @@ if len(slides) != len(order):
 for n, (s, r) in enumerate(zip(slides, order), 1):
     if r.get("סוג") == "וידאו":
         media = [sh for sh in s.shapes if sh.shape_type == MSO_SHAPE_TYPE.MEDIA]
-        want = str(int(math.ceil(float(r["משך"]) * 10)) * 100)
+        want = str(r["ms"])
         tr = s._element.find(qn("p:transition"))
         rels = [rel for rel in s.part.rels.values() if "video" in rel.reltype or "media" in rel.reltype]
         blobs = {rel.target_part.blob for rel in rels if not rel.is_external}
+        media = [m for m in media if m.left >= 0]   # the off-slide music object on slide 1 is not a slide video
         if len(media) != 1:
             errors.append(f"שקופית {n}: {len(media)} סרטונים")
         elif (base / r["קובץ"]).read_bytes() not in blobs:
@@ -58,20 +60,28 @@ for n, (s, r) in enumerate(zip(slides, order), 1):
     if any(sh.has_text_frame and sh.text_frame.text.strip() for sh in s.shapes):
         errors.append(f"שקופית {n}: יש טקסט")
     tr = s._element.find(qn("p:transition"))
-    if tr is None or tr.get("advTm") != "3000":
-        errors.append(f"שקופית {n}: חסר מעבר של 3 שניות")
+    if tr is None or tr.get("advTm") != str(PHOTO_MS):
+        errors.append(f"שקופית {n}: חסר מעבר אוטומטי של {PHOTO_MS} ms")
     elif tr.getprevious() is None or tr.getprevious().tag != qn("p:clrMapOvr"):
         errors.append(f"שקופית {n}: המעבר לא במיקום הנכון ב-XML")
+# music: one audio object on slide 1 that spans all slides
+s1 = slides[0]
+aud = [rel for rel in s1.part.rels.values() if rel.reltype.endswith("/audio")]
+tm1 = etree.tostring(s1._element.find(qn("p:timing"))).decode() if s1._element.find(qn("p:timing")) is not None else ""
+MUSIC = bool(aud)
+if MUSIC and f'numSld="{len(slides)}"' not in tm1:
+    errors.append("המוזיקה לא מוגדרת להתנגן לאורך כל השקופיות")
 print("verification:", "OK" if not errors else f"{len(errors)} errors")
 for e in errors[:20]:
     print("  ", e)
 
 # ---------- report ----------
 seed = order[0]["seed"] if order else ""
-total = sum(math.ceil(float(r["משך"]) * 10) / 10 if r.get("סוג") == "וידאו" else 3 for r in order)
+total = sum(r["ms"] for r in order) / 1000
 nvid = sum(r.get("סוג") == "וידאו" for r in order)
 L = [f"# {args.title}", "", f"- קובץ: `{Path(args.pptx).name}`", f"- שקופיות: {len(slides)} ({len(slides) - nvid} תמונות, {nvid} סרטונים)",
-     f"- משך: {int(total) // 60}:{int(total) % 60:02d} דקות (תמונה: 3 שניות; סרטון: באורך הסרטון, בלי סאונד)", f"- seed: {seed}",
+     f"- משך: {int(total) // 60}:{int(total) % 60:02d} דקות (תמונה: {PHOTO_MS / 1000:.2f} שניות; סרטון: באורך הסרטון, בלי סאונד)",
+     f"- מוזיקה: {'משובצת בשקופית 1 ומתנגנת לאורך כל המצגת' if MUSIC else 'אין'}", f"- seed: {seed}",
      f"- בדיקה סופית: {'עברה ✅' if not errors else 'נכשלה ❌'}"]
 L += [f"  - {e}" for e in errors]
 for title, col in (("לפי מסלול", "מסלול"), ("לפי שולח", "שולח"), ("לפי קטגוריה", "קטגוריה"), ("לפי סוג", "סוג")):

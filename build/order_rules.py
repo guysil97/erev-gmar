@@ -20,7 +20,7 @@ from collections import Counter
 from common import UNKNOWN
 
 HARD = 1000.0
-W_SENDER, W_ROUTE, W_CAT = 1.0, 0.5, 0.2
+W_SENDER, W_ROUTE, W_CAT, W_ERA, W_KIND = 1.0, 0.5, 0.2, 2.0, 2.0
 
 
 def load_manifest(path):
@@ -36,7 +36,14 @@ class Problem:
         self.N = len(rows)
         self.has_cat = any(r.get("קטגוריה") for r in rows)
         self.attrs = {"sender": [r["שולח"] for r in rows], "route": [r["מסלול"] for r in rows],
-                      "cat": [r.get("קטגוריה", "") for r in rows]}
+                      "cat": [r.get("קטגוריה", "") for r in rows],
+                      "era": [r.get("תקופה", "") for r in rows], "kind": [r.get("סוג", "") for r in rows]}
+        # Pinned slides (opening / closing), from the manifest's "pin" column.
+        pins = [r.get("pin", "") for r in rows]
+        self.first = pins.index("first") if "first" in pins else None
+        self.last = pins.index("last") if "last" in pins else None
+        self.lo = 1 if self.first is not None else 0
+        self.hi = self.N - 1 if self.last is not None else self.N   # free positions: [lo, hi)
         # Integer codes for fast scoring; exempt values (unknown / empty) get unique negative codes.
         self.codes = {}
         for key, vals in self.attrs.items():
@@ -118,6 +125,9 @@ class Problem:
         c += W_SENDER * self._spread_fast(o, "sender") + W_ROUTE * self._spread_fast(o, "route")
         if self.has_cat:
             c += W_CAT * self._spread_fast(o, "cat")
+        c += W_ERA * self._spread_fast(o, "era")
+        if len(set(self.attrs["kind"])) > 1:
+            c += W_KIND * self._spread_fast(o, "kind")
         return c
 
     def bad_positions(self, order):
@@ -129,6 +139,8 @@ class Problem:
         """Stratified start: each photo gets a jittered ideal slot within its sender, then sort."""
         groups = {}
         for i, s in enumerate(self.attrs["sender"]):
+            if i in (self.first, self.last):
+                continue
             groups.setdefault(s, []).append(i)
         key = {}
         for g, idx in groups.items():
@@ -136,7 +148,8 @@ class Problem:
             n = len(idx)
             for k, i in enumerate(idx):
                 key[i] = (k + rng.random()) / n
-        return sorted(range(self.N), key=lambda i: key[i])
+        mid = sorted(key, key=lambda i: key[i])
+        return ([self.first] if self.first is not None else []) + mid + ([self.last] if self.last is not None else [])
 
     def anneal(self, order, rng, iters):
         order = list(order)
@@ -146,10 +159,9 @@ class Problem:
         for t in range(iters):
             T = T0 * (T1 / T0) ** (t / max(1, iters - 1))
             v = self.bad_positions(order) if rng.random() < 0.5 else ()
-            a = (int(v[rng.randrange(len(v))]) + rng.randrange(3)) if len(v) else rng.randrange(self.N)
-            a = min(a, self.N - 1)
-            b = rng.randrange(self.N)
-            if a == b:
+            a = (int(v[rng.randrange(len(v))]) + rng.randrange(3)) if len(v) else rng.randrange(self.lo, self.hi)
+            b = rng.randrange(self.lo, self.hi)
+            if a == b or not (self.lo <= a < self.hi):
                 continue
             order[a], order[b] = order[b], order[a]
             new = self.cost(order)
@@ -165,11 +177,11 @@ class Problem:
 def write_order(path, prob, order, seed):
     with open(path, "w", newline="", encoding="utf-8-sig") as f:
         w = csv.writer(f)
-        w.writerow(["מיקום", "קובץ", "שולח", "מסלול", "קטגוריה", "סוג", "משך", "פוסטר", "seed"])
+        w.writerow(["מיקום", "קובץ", "שולח", "מסלול", "קטגוריה", "סוג", "משך", "פוסטר", "seed", "תקופה"])
         for p, i in enumerate(order, 1):
             r = prob.rows[i]
             w.writerow([p, r["קובץ"], r["שולח"], r["מסלול"], r.get("קטגוריה", ""), r.get("סוג", "תמונה"),
-                        r.get("משך", ""), r.get("פוסטר", ""), seed])
+                        r.get("משך", ""), r.get("פוסטר", ""), seed, r.get("תקופה", "")])
 
 
 def read_order(path, prob):

@@ -28,6 +28,7 @@ GALIT_FOLDER = "תמונות מתוך גלית רוזן"
 ROUTES = {"מלא", "תסריטאות"}
 
 VIDEO_EXT = {".mp4", ".mov", ".avi", ".mkv", ".m4v", ".3gp", ".wmv", ".webm", ".mts", ".m2ts", ".mpg", ".mpeg"}
+AUDIO_EXT = {".mp3", ".m4a", ".wav", ".aac", ".flac", ".ogg"}
 JUNK_NAMES = {".ds_store", "thumbs.db", "desktop.ini"}
 
 

@@ -15,6 +15,8 @@ from common import IMAGES, INVENTORY, MANIFEST
 
 pillow_heif.register_heif_opener()
 Image.MAX_IMAGE_PIXELS = None
+from PIL import ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True  # one source file in Drive is cut short by a few bytes
 LONG_SIDE = 2560
 QUALITY = 85
 

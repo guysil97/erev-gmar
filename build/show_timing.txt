@@ -1,0 +1,7 @@
+music_sec=1208.294
+photo_sec=3.0069
+song=/home/user/erev-gmar/source/מלא/שירים/Nappy Roots - Good Day (1).mp3 1
+song=/home/user/erev-gmar/source/מלא/שירים/This Will Be Our Year.mp3 2
+song=/home/user/erev-gmar/source/מלא/שירים/גידי גוב - אני שוב מתאהב.mp3 3
+song=/home/user/erev-gmar/source/מלא/שירים/סאבלימינל והצל - הפינאלי - Subliminal.mp3 4
+song=/home/user/erev-gmar/source/מלא/שירים/Mr. Blue Sky.mp3 5

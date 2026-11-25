@@ -15,11 +15,13 @@ from PIL import Image, ImageOps
 import re
 import subprocess
 
-from common import (EXCLUDE_SOURCES, EXTRACTED, GALIT_CLIPS, GALIT_FOLDER, INVENTORY, JUNK_NAMES, SRC, UNKNOWN,
+from common import (AUDIO_EXT, EXCLUDE_SOURCES, EXTRACTED, GALIT_CLIPS, GALIT_FOLDER, INVENTORY, JUNK_NAMES, SRC, UNKNOWN,
                     VIDEO_EXT, classify_route, nfc)
 
 pillow_heif.register_heif_opener()
 Image.MAX_IMAGE_PIXELS = None
+from PIL import ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True  # one source file in Drive is cut short by a few bytes
 
 PHASH_MAX = 6   # hamming distance thresholds for "same picture"
 DHASH_MAX = 8
@@ -143,6 +145,8 @@ def main():
             row.update(status="skipped", reason="zip (חולץ)" + (f"; שגיאות: {len(errs)}" if errs else ""))
         elif name in JUNK_NAMES or path.name.startswith("._") or "__MACOSX" in rel:
             row.update(status="skipped", reason="קובץ מערכת")
+        elif ext in AUDIO_EXT or ext.split(" ")[0] in AUDIO_EXT or ".mp3" in path.name.lower():
+            row.update(status="skipped", reason="שיר (מוזיקת רקע)")
         elif ext in VIDEO_EXT:
             try:
                 w, h, dur = probe_video(path)

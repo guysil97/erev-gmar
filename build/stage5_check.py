@@ -46,6 +46,9 @@ for k in ("שולח רצוף", "3 רצופות מאותו מסלול", "3 רצו
         lines.append(f"- {k}: {cnt[k]} (חסם תחתון {lb.get(k, 0)})")
 if viol:
     lines += ["", "## מיקומי הפרות", *[f"- שקופית {p}: {k} ({g})" for k, p, g in viol]]
+for key, title in (("era", "תקופה"), ("kind", "סוג"), ("route", "מסלול")):
+    sp = prob.spread(order, key)
+    lines += ["", f"## פיזור לפי {title}", *[f"- {g}: {v:.2f}" for g, v in sorted(sp.items())]]
 lines += ["", "## פיזור לפי שולח (0 = פיזור אחיד מושלם, 1 = סטייה של רווח שלם בממוצע)"]
 for g, v in sorted(spread.items(), key=lambda x: -x[1]):
     lines.append(f"- {g}: {v:.2f}")

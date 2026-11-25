@@ -66,3 +66,16 @@
 3. Remove duplicates **and very similar photos** (burst shots / the same moment): keep only the best one.
 4. Background music from a "מוזיקה" folder in Drive (if uploaded). Open question: also an MP4 of the whole show?
 5. The user is still adding material and instructions.
+
+## Final build (2026-11-25) – done
+At the user's request ("prepare the slideshow, export both mp4 and PowerPoint") everything ran without the two checkpoints.
+Pipeline (cd build):
+  stage1_inventory.py → stage1b_similar.py → stage2_process.py → stage3_review_list.py → stage3_sheets.py review.csv contact_sheets
+  → (visual review → review_decisions.txt) → stage3c_select.py → stage4_order.py --seed 2026 --manifest manifest_final.csv
+  → stage5_check.py --manifest manifest_final.csv → stage6a_music.py → stage6_pptx.py → stage6b_mp4.py
+  → stage7_verify.py --manifest manifest_final.csv → stage7b_summary.py
+- review_decisions.txt = the visual decisions per row of review.csv (S strong / X out / P production / FIRST / LAST).
+  **If material is added, review.csv numbering changes** – review only the new rows and remap the decisions by "מקור".
+- Selection: videos first, 1/3 old (Galit Rosen) / 2/3 new, length = music (20:08), photo = 3.007 s.
+- Outputs: graduation_slideshow.pptx (music embedded on slide 1, plays across all slides), graduation_slideshow.mp4, report.md.
+- Not verified: actual playback in PowerPoint (no PowerPoint here) – verified the XML structure in code + a LibreOffice render.
